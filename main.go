@@ -1,17 +1,25 @@
 package main
 
 import (
+	"errors"
+	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/rrgmc/whymodwhy/pkg"
 )
 
+var (
+	printOnly = flag.Bool("p", false, "print only")
+)
+
 func main() {
+	flag.Parse()
+
 	if err := run(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
@@ -21,10 +29,29 @@ func run() error {
 		return err
 	}
 
-	if len(os.Args) > 1 {
-		pkgs, ok := graph.Packages[os.Args[1]]
+	if *printOnly {
+		return runPrint(graph)
+	}
+
+	if len(flag.Args()) == 0 {
+		return errors.New("package name is required")
+	}
+
+	pkgs, ok := graph.Packages[flag.Arg(0)]
+	if !ok {
+		return fmt.Errorf("package '%s' not found in dependencies", flag.Arg(0))
+	}
+
+	printPackage(graph, pkgs)
+
+	return nil
+}
+
+func runPrint(graph *pkg.Graph) error {
+	if len(flag.Args()) > 0 {
+		pkgs, ok := graph.Packages[flag.Arg(0)]
 		if !ok {
-			return fmt.Errorf("unknown package %s", os.Args[1])
+			return fmt.Errorf("unknown package %s", flag.Arg(0))
 		}
 		printPackage(graph, pkgs)
 		return nil
