@@ -33,6 +33,10 @@ func run() error {
 		return runPrint(graph)
 	}
 
+	return runFind(graph)
+}
+
+func runFind(graph *pkg.Graph) error {
 	if len(flag.Args()) == 0 {
 		return errors.New("package name is required")
 	}
@@ -42,7 +46,28 @@ func run() error {
 		return fmt.Errorf("package '%s' not found in dependencies", flag.Arg(0))
 	}
 
-	printPackage(graph, pkgs)
+	return runFindPkg(graph, pkgs)
+}
+
+func runFindPkg(graph *pkg.Graph, p *pkg.Package) error {
+	printPackage(graph, p)
+
+	// 1: check if direct dependency
+	if checkDirectDependency(graph, p) {
+		fmt.Printf("'%s' is a direct dependency of the root module '%s', just run:\n", p.Name, graph.Root)
+		fmt.Printf("go get %s\n", p.Name)
+		return nil
+	}
+
+	pkgs, err := checkRootPackages(graph, p)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("to upgrade '%s' these packages must be upgraded:\n", p.Name)
+	for _, fp := range pkgs {
+		fmt.Printf("- %s\n", fp)
+	}
 
 	return nil
 }

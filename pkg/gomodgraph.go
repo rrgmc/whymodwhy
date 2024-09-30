@@ -36,6 +36,26 @@ func (g *Graph) IsRootIndirectMod(name string) bool {
 	return slices.Contains(g.RootIndirectMods, name)
 }
 
+func (g *Graph) GetPackage(name string) *Package {
+	p, exists := g.Packages[name]
+	if !exists {
+		return nil
+	}
+	return p
+}
+
+func (g *Graph) GetPackageVersion(name string, version string) (*Package, *PackageVersion) {
+	p, exists := g.Packages[name]
+	if !exists {
+		return nil, nil
+	}
+	v, exists := p.Versions[version]
+	if !exists {
+		return nil, nil
+	}
+	return p, v
+}
+
 func (g *Graph) SortedPackages() []*Package {
 	pkgs := slices.Collect(maps.Keys(g.Packages))
 	slices.Sort(pkgs)
