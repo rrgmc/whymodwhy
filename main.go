@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	printOnly = flag.Bool("p", false, "print only")
+	printOnly       = flag.Bool("p", false, "print only")
+	showLastVersion = flag.Bool("v", false, "show last version of returned packages")
 )
 
 func main() {
@@ -64,14 +65,31 @@ func runFindPkg(graph *pkg.Graph, p *pkg.Package) error {
 		return err
 	}
 
+	var lverr error
+
 	fmt.Printf("to upgrade '%s' these packages must be upgraded:\n", p.Name)
 	for _, fp := range pkgs {
+		lastversion := ""
+
+		if *showLastVersion {
+			lv, err := GetLatestPackageVersion(fp)
+			if err == nil {
+				lastversion = fmt.Sprintf(" (last version: %s)", lv.Version)
+			} else {
+				lverr = errors.Join(lverr, fmt.Errorf("error getting last version of '%s': %w", fp, err))
+			}
+		}
+
 		xp := graph.GetPackage(fp)
 		if xp == nil {
-			fmt.Printf("- %s\n", fp)
+			fmt.Printf("- %s%s\n", fp)
 		} else {
-			fmt.Printf("- %s (local version: %s)\n", fp, xp.LastVersion)
+			fmt.Printf("- %s (local version: %s)%s\n", fp, xp.LastVersion, lastversion)
 		}
+	}
+
+	if lverr != nil {
+		fmt.Printf("errors getting latest version of packages: %s", lverr)
 	}
 
 	return nil
