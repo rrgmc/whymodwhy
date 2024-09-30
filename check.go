@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/rrgmc/whymodwhy/pkg"
 )
@@ -49,7 +50,10 @@ func checkRootPackages(graph *pkg.Graph, p *pkg.Package) ([]string, error) {
 		}
 	}
 
-	return dedupeSlice(ret), nil
+	dret := dedupeSlice(ret)
+	slices.Sort(dret)
+
+	return dret, nil
 }
 
 func getParentRootPackages(graph *pkg.Graph, p *pkg.Package, v *pkg.PackageVersion) ([]string, error) {

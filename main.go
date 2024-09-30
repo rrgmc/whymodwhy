@@ -52,7 +52,7 @@ func runFind(graph *pkg.Graph) error {
 func runFindPkg(graph *pkg.Graph, p *pkg.Package) error {
 	// printPackage(graph, p)
 
-	// 1: check if direct dependency
+	// check if direct dependency
 	if checkDirectDependency(graph, p) {
 		fmt.Printf("'%s' is a direct dependency of the root module '%s', just run:\n", p.Name, graph.Root)
 		fmt.Printf("go get %s\n", p.Name)
@@ -66,7 +66,12 @@ func runFindPkg(graph *pkg.Graph, p *pkg.Package) error {
 
 	fmt.Printf("to upgrade '%s' these packages must be upgraded:\n", p.Name)
 	for _, fp := range pkgs {
-		fmt.Printf("- %s\n", fp)
+		xp := graph.GetPackage(fp)
+		if xp == nil {
+			fmt.Printf("- %s\n", fp)
+		} else {
+			fmt.Printf("- %s (local version: %s)\n", fp, xp.LastVersion)
+		}
 	}
 
 	return nil
