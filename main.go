@@ -3,13 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"maps"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/rrgmc/whymodwhy/pkg"
-	"golang.org/x/mod/semver"
 )
 
 func main() {
@@ -33,24 +30,16 @@ func run() error {
 		return nil
 	}
 
-	for _, pkgs := range graph.Packages {
+	for _, pkgs := range graph.SortedPackages() {
 		printPackage(graph, pkgs)
 	}
-
-	// spew.Dump(graph)
 
 	return nil
 }
 
 func printPackage(graph *pkg.Graph, pkgs *pkg.Package) {
 	fmt.Printf("%s %s (%s) %s\n", strings.Repeat("=", 5), pkgs.Name, pkgs.LastVersion, strings.Repeat("=", 5))
-	versions := slices.Collect(maps.Keys(pkgs.Versions))
-	slices.SortFunc(versions, func(a, b string) int {
-		return semver.Compare(a, b)
-	})
-	slices.Reverse(versions)
-	for _, vorder := range versions {
-		version := pkgs.Versions[vorder]
+	for _, version := range pkgs.SortedVersions() {
 		versionextra := ""
 		if version.Version == pkgs.LastVersion {
 			versionextra = " (last)"
@@ -61,7 +50,7 @@ func printPackage(graph *pkg.Graph, pkgs *pkg.Package) {
 			for parentPkg, parentVersion := range version.Parents {
 				if parentPkg == graph.Root {
 					pextra := ""
-					if slices.Contains(graph.RootIndirectMods, pkgs.Name) {
+					if graph.IsRootIndirectMod(pkgs.Name) {
 						pextra = " (indirect)"
 					}
 					fmt.Printf("\t\t%s%s\n", parentPkg, pextra)

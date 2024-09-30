@@ -5,7 +5,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"maps"
 	"os/exec"
+	"slices"
 	"sort"
 	"strings"
 
@@ -30,10 +32,37 @@ type Graph struct {
 	Packages         map[string]*Package
 }
 
+func (g *Graph) IsRootIndirectMod(name string) bool {
+	return slices.Contains(g.RootIndirectMods, name)
+}
+
+func (g *Graph) SortedPackages() []*Package {
+	pkgs := slices.Collect(maps.Keys(g.Packages))
+	slices.Sort(pkgs)
+	var ret []*Package
+	for _, p := range pkgs {
+		ret = append(ret, g.Packages[p])
+	}
+	return ret
+}
+
 type Package struct {
 	Name        string
 	LastVersion string
 	Versions    map[string]*PackageVersion
+}
+
+func (p *Package) SortedVersions() []*PackageVersion {
+	versions := slices.Collect(maps.Keys(p.Versions))
+	slices.SortFunc(versions, func(a, b string) int {
+		return semver.Compare(a, b)
+	})
+	slices.Reverse(versions)
+	var ret []*PackageVersion
+	for _, v := range versions {
+		ret = append(ret, p.Versions[v])
+	}
+	return ret
 }
 
 type PackageVersion struct {
