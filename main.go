@@ -50,7 +50,7 @@ func runFind(graph *pkg.Graph) error {
 }
 
 func runFindPkg(graph *pkg.Graph, p *pkg.Package) error {
-	printPackage(graph, p)
+	// printPackage(graph, p)
 
 	// 1: check if direct dependency
 	if checkDirectDependency(graph, p) {

@@ -20,11 +20,6 @@ func checkDirectDependency(graph *pkg.Graph, p *pkg.Package) bool {
 	return false
 }
 
-// type RootPackage struct {
-// 	Package string
-// 	Path    []string
-// }
-
 func checkRootPackages(graph *pkg.Graph, p *pkg.Package) ([]string, error) {
 	visited := map[string]struct{}{}
 
@@ -58,10 +53,10 @@ func checkRootPackages(graph *pkg.Graph, p *pkg.Package) ([]string, error) {
 }
 
 func getParentRootPackages(graph *pkg.Graph, p *pkg.Package, v *pkg.PackageVersion) ([]string, error) {
-	fmt.Printf("!! %s -- %s\n", p.Name, v.Version)
+	// fmt.Printf("!! %s -- %s\n", p.Name, v.Version)
 
 	if checkDirectDependency(graph, p) {
-		fmt.Printf("@ DIRECT: %s\n", p.Name)
+		// fmt.Printf("@ DIRECT: %s\n", p.Name)
 		return []string{p.Name}, nil
 	}
 
@@ -82,7 +77,7 @@ func getParentRootPackages(graph *pkg.Graph, p *pkg.Package, v *pkg.PackageVersi
 			return nil, err
 		}
 
-		fmt.Printf("@ %s(%s): %v\n", parentp.Name, parentv.Version, f)
+		// fmt.Printf("@ %s(%s): %v\n", parentp.Name, parentv.Version, f)
 
 		ret = append(ret, f...)
 	}
